@@ -1,0 +1,15 @@
+[Unit]
+Description=Ashigaru daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/pi/ashigaru/ashigaru
+ExecStop=/bin/kill -s QUIT $MAINPID
+Restart=always
+RestartSec=10
+User=pi
+WorkingDirectory=/home/pi/ashigaru
+
+[Install]
+WantedBy=multi-user.target
