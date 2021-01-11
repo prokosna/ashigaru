@@ -1,4 +1,5 @@
 use crate::domain;
+use crate::domain::Event;
 use log::*;
 use std::process::Command;
 use std::thread;
@@ -13,17 +14,28 @@ impl OrderExecutorShell {
 }
 
 impl domain::OrderExecutor for OrderExecutorShell {
-  fn execute(&self, orders: Vec<domain::Order>, duration: Duration) -> anyhow::Result<()> {
+  fn execute(&self, orders: Vec<domain::Order>, event: Event) -> anyhow::Result<()> {
+    let duration = match event.duration {
+      Some(x) => Duration::from_secs(x),
+      None => Duration::from_secs(0),
+    };
+
     for order in orders {
+      let event1 = event.clone();
       thread::spawn(move || {
-        let mut args: Vec<&str> = order.command.split_whitespace().collect();
+        let command = match event1.arg {
+          Some(arg) => format!("{} {}", order.command, arg),
+          None => order.command,
+        };
+
+        let mut args: Vec<&str> = command.split_whitespace().collect();
         if args.len() <= 0 {
           return;
         }
 
         info!(
           "Will execute '{}' after {} secs",
-          order.command,
+          command,
           duration.as_secs()
         );
 
@@ -34,18 +46,18 @@ impl domain::OrderExecutor for OrderExecutorShell {
           if output.status.success() {
             info!(
               "'{}' was done successfully: {}",
-              order.command,
+              command,
               std::str::from_utf8(&output.stdout).unwrap_or("")
             );
           } else {
             error!(
               "'{}' was failed: {}",
-              order.command,
+              command,
               std::str::from_utf8(&output.stderr).unwrap_or("")
             );
           }
         } else {
-          error!("'{}' was failed", order.command);
+          error!("'{}' was failed", command);
         }
       });
     }

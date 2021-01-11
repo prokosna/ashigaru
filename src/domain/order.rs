@@ -1,6 +1,6 @@
+use crate::domain::Event;
 use anyhow::*;
 use serde::{Deserialize, Serialize};
-use std::time::Duration;
 use uuid::Uuid;
 #[derive(Clone, PartialEq, Eq, Serialize, Deserialize, Debug)]
 pub struct Order {
@@ -33,7 +33,7 @@ pub trait UsesOrderRepository {
 }
 
 pub trait OrderExecutor {
-  fn execute(&self, orders: Vec<Order>, duration: Duration) -> Result<()>;
+  fn execute(&self, orders: Vec<Order>, event: Event) -> Result<()>;
 }
 
 pub trait UsesOrderExecutor {

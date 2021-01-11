@@ -6,6 +6,7 @@ pub struct Event {
   pub id: String,
   pub order_name: String,
   pub duration: Option<u64>,
+  pub arg: Option<String>,
   pub created_at: DateTime<Utc>,
 }
 
